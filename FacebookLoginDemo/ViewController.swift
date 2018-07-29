@@ -12,11 +12,14 @@ import FBSDKCoreKit
 
 class ViewController: UIViewController {
 
+    @IBOutlet weak var emailLabel: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view, typically from a nib.
         let loginButton = LoginButton(readPermissions: [ .publicProfile, .email, .userBirthday ])
         loginButton.center = view.center
+        loginButton.delegate = self
         
         view.addSubview(loginButton)
     }
@@ -24,28 +27,35 @@ class ViewController: UIViewController {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         
-        if let accessToken = FBSDKAccessToken.current(), accessToken.tokenString.isEmpty {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                let alertController = UIAlertController.init(title: "User Logged In", message: "Yay, you've logged in already.", preferredStyle: .actionSheet)
-                self.present(alertController, animated: true, completion: nil)
-            }
-        }
+        fetchGraphValues()
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
 
+    //MARK: Private Methods
+    func fetchGraphValues() {
+        if((FBSDKAccessToken.current()) != nil) {
+            FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, name, birthday, email"]).start(completionHandler: { (connection, result, error) -> Void in
+                if (error == nil) {
+                    if let resultDictionary = result as? [String : String] {
+                        self.emailLabel.text = "Your Email: \( resultDictionary["email"]  ?? "")"
+                    }
+                }
+            })
+        }
+    }
 
 }
 
 extension ViewController: LoginButtonDelegate {
     func loginButtonDidCompleteLogin(_ loginButton: LoginButton, result: LoginResult) {
-        print(result)
+        self.fetchGraphValues()
     }
     
     func loginButtonDidLogOut(_ loginButton: LoginButton) {
-        
+        self.emailLabel.text = "Login with your Facebook account to Get your Email."
     }
 }
