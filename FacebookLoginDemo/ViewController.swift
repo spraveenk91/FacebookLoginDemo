@@ -38,7 +38,7 @@ class ViewController: UIViewController {
     //MARK: Private Methods
     func fetchGraphValues() {
         if((FBSDKAccessToken.current()) != nil) {
-            FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, name, birthday, email"]).start(completionHandler: { (connection, result, error) -> Void in
+            FBSDKGraphRequest(graphPath: "me", parameters: ["fields": "id, name, email"]).start(completionHandler: { (connection, result, error) -> Void in
                 if (error == nil) {
                     if let resultDictionary = result as? [String : String] {
                         self.emailLabel.text = "Your Email: \( resultDictionary["email"]  ?? "")"
